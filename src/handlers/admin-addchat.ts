@@ -1,17 +1,25 @@
 import { Composer } from "grammy";
+import type { Ctx } from "../bot.js";
+import { inlineButton, inlineKeyboard } from "../toolkit/index.js";
 
-// SCAFFOLD — generated from the bot blueprint BEFORE the agent runs.
-// Keep a LIVE registration (.command / .callbackQuery / …) so this feature is
-// never an empty stub. Replace the reply body with real logic + copy; if you
-// change the user-facing text, update tests/specs to match EXACTLY.
-// Do NOT rewrite src/bot.ts — buildBot() already auto-loads this module.
-// Menu: wire this into /start via registerMainMenuItem({ label: "Add New Chat", data: "admin:addchat" }) if the toolkit exposes it.
+const composer = new Composer<Ctx>();
 
-const composer = new Composer();
-
+// admin:addchat callback — from main menu button
 composer.callbackQuery("admin:addchat", async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.reply("Trigger /addchat command in admin console");
+  
+  if (!ctx.from) return;
+  
+  ctx.session.step = "awaiting_addchat";
+  await ctx.editMessageText(
+    "Send the chat ID or invite link to add a new chat to the index.\n\n" +
+    "You can send:\n" +
+    "• A numeric chat ID (e.g., -1001234567890)\n" +
+    "• An invite link (e.g., https://t.me/chatname)",
+    {
+      reply_markup: inlineKeyboard([[inlineButton("Cancel", "menu:main")]]),
+    }
+  );
 });
 
 export default composer;

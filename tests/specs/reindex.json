@@ -7,7 +7,7 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Force reindexing of a specific chat"
+              "text": "No chats in the index yet. Tap ➕ Add chat to add one first."
             }
           }
         ],

@@ -7,7 +7,7 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Remove a chat from indexing"
+              "text": "No chats in the index yet. Tap ➕ Add chat to add one."
             }
           }
         ],

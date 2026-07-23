@@ -5,9 +5,9 @@
       {
         "expect": [
           {
-            "method": "sendMessage",
+            "method": "editMessageText",
             "payload": {
-              "text": "Trigger /addchat command in admin console"
+              "text": "Send the chat ID or invite link to add a new chat to the index.\n\nYou can send:\n• A numeric chat ID (e.g., -1001234567890)\n• An invite link (e.g., https://t.me/chatname)"
             }
           }
         ],
