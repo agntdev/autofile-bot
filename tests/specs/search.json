@@ -7,7 +7,7 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Initiate file search with text query and optional filters"
+              "text": "Send a search query to find files. You can also tap the filter buttons below."
             }
           }
         ],

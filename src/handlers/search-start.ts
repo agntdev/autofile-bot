@@ -1,17 +1,29 @@
 import { Composer } from "grammy";
+import type { Ctx } from "../bot.js";
+import { inlineButton, inlineKeyboard } from "../toolkit/index.js";
 
-// SCAFFOLD — generated from the bot blueprint BEFORE the agent runs.
-// Keep a LIVE registration (.command / .callbackQuery / …) so this feature is
-// never an empty stub. Replace the reply body with real logic + copy; if you
-// change the user-facing text, update tests/specs to match EXACTLY.
-// Do NOT rewrite src/bot.ts — buildBot() already auto-loads this module.
-// Menu: wire this into /start via registerMainMenuItem({ label: "Search Files", data: "search:start" }) if the toolkit exposes it.
+const composer = new Composer<Ctx>();
 
-const composer = new Composer();
-
+// search:start callback — open search interface from main menu
 composer.callbackQuery("search:start", async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.reply("Open search interface in main menu");
+  
+  // Set session state for search
+  ctx.session.step = "awaiting_search_query";
+  
+  await ctx.editMessageText(
+    "Send a search query to find files. You can also tap the filter buttons below.",
+    {
+      reply_markup: inlineKeyboard([
+        [inlineButton("📄 Documents", "search:filter:document")],
+        [inlineButton("🖼 Images", "search:filter:image")],
+        [inlineButton("🎥 Videos", "search:filter:video")],
+        [inlineButton("🎵 Audio", "search:filter:audio")],
+        [inlineButton("📦 All files", "search:filter:")],
+        [inlineButton("⬅️ Back to menu", "menu:main")],
+      ]),
+    }
+  );
 });
 
 export default composer;

@@ -5,9 +5,9 @@
       {
         "expect": [
           {
-            "method": "sendMessage",
+            "method": "editMessageText",
             "payload": {
-              "text": "Open search interface in main menu"
+              "text": "Send a search query to find files. You can also tap the filter buttons below."
             }
           }
         ],
