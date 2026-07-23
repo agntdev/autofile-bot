@@ -1,0 +1,20 @@
+[
+  {
+    "name": "/listchats",
+    "steps": [
+      {
+        "expect": [
+          {
+            "method": "sendMessage",
+            "payload": {
+              "text": "Show all indexed chat sources"
+            }
+          }
+        ],
+        "send": {
+          "text": "/listchats"
+        }
+      }
+    ]
+  }
+]
