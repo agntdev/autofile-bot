@@ -126,6 +126,7 @@ composer.callbackQuery(/^file:preview:(.+)$/, async (ctx) => {
   await ctx.editMessageText(details, {
     reply_markup: inlineKeyboard([
       [inlineButton("📤 Send file", `file:send:${fileId}`)],
+      [inlineButton("📎 Shorten link", `shorten:${fileId}`)],
       [inlineButton("⬅️ Back to results", `search:back`)],
     ]),
   });

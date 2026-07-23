@@ -17,9 +17,15 @@ export interface UrlButton {
   url: string;
 }
 
+/** A copy-text button: tapping it copies `copy_text.text` to the clipboard. */
+export interface CopyTextButton {
+  text: string;
+  copy_text: { text: string };
+}
+
 /** A single inline keyboard button. Discriminated so the markup is structurally
  *  assignable to grammY's `reply_markup` while staying dependency-free. */
-export type InlineButton = CallbackButton | UrlButton;
+export type InlineButton = CallbackButton | UrlButton | CopyTextButton;
 
 /** Telegram InlineKeyboardMarkup shape. */
 export interface InlineKeyboardMarkup {
@@ -33,7 +39,12 @@ export function inlineButton(text: string, callbackData: string): CallbackButton
 
 /** A url button: tapping it opens `url`. */
 export function urlButton(text: string, url: string): UrlButton {
-  return { text, url };
+  return { text, url: url };
+}
+
+/** A copy-text button: tapping it copies text to the clipboard. */
+export function copyTextButton(text: string, copyText: string): CopyTextButton {
+  return { text, copy_text: { text: copyText } };
 }
 
 /** Wrap rows of buttons into an InlineKeyboardMarkup. */
