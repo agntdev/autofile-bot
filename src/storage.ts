@@ -39,11 +39,25 @@ export interface User {
   result_limit: number;
 }
 
+export interface ShortLink {
+  token: string;
+  original_url: string;
+  file_id: string;
+  creator_user_id: number;
+  created_at: number;
+  expires_at: number;
+  click_count: number;
+  is_single_use: boolean;
+  is_active: boolean;
+}
+
 // Storage instances — lazy-initialized on first use
 let chatStorage: StorageAdapter<Record<string, ChatSource>> | null = null;
 let fileStorage: StorageAdapter<Record<string, FileRecord>> | null = null;
 let userStorage: StorageAdapter<Record<string, User>> | null = null;
 let indexStorage: StorageAdapter<string[]> | null = null;
+let shortLinkStorage: StorageAdapter<Record<string, ShortLink>> | null = null;
+let shortLinkIndexStorage: StorageAdapter<string[]> | null = null;
 
 function getStorage<T>(prefix: string): StorageAdapter<T> {
   const env = typeof process === "undefined" ? {} : process.env;
@@ -71,6 +85,16 @@ function getUserStorage(): StorageAdapter<Record<string, User>> {
 function getIndexStorage(): StorageAdapter<string[]> {
   if (!indexStorage) indexStorage = getStorage("idx:");
   return indexStorage;
+}
+
+function getShortLinkStorage(): StorageAdapter<Record<string, ShortLink>> {
+  if (!shortLinkStorage) shortLinkStorage = getStorage("shortlink:");
+  return shortLinkStorage;
+}
+
+function getShortLinkIndexStorage(): StorageAdapter<string[]> {
+  if (!shortLinkIndexStorage) shortLinkIndexStorage = getStorage("shortlinkidx:");
+  return shortLinkIndexStorage;
 }
 
 // Chat operations
@@ -238,5 +262,94 @@ export async function setAdmin(userId: number, admin: boolean): Promise<void> {
   if (user) {
     user.role = admin ? "admin" : "user";
     await setUser(user);
+  }
+}
+
+// ShortLink operations
+export async function addShortLink(link: ShortLink): Promise<void> {
+  const storage = getShortLinkStorage();
+  await storage.write(link.token, { [link.token]: link });
+  
+  // Update user index
+  const indexStorage = getShortLinkIndexStorage();
+  const userIndexKey = `user:${link.creator_user_id}`;
+  const existing = await indexStorage.read(userIndexKey) ?? [];
+  if (!existing.includes(link.token)) {
+    existing.push(link.token);
+    await indexStorage.write(userIndexKey, existing);
+  }
+}
+
+export async function getShortLink(token: string): Promise<ShortLink | undefined> {
+  const storage = getShortLinkStorage();
+  const data = await storage.read(token);
+  return data?.[token];
+}
+
+export async function updateShortLink(link: ShortLink): Promise<void> {
+  const storage = getShortLinkStorage();
+  await storage.write(link.token, { [link.token]: link });
+}
+
+export async function revokeShortLink(token: string): Promise<boolean> {
+  const link = await getShortLink(token);
+  if (!link) return false;
+  
+  link.is_active = false;
+  await updateShortLink(link);
+  return true;
+}
+
+export async function getShortLinksByUser(userId: number): Promise<ShortLink[]> {
+  const indexStorage = getShortLinkIndexStorage();
+  const userIndexKey = `user:${userId}`;
+  const tokens = await indexStorage.read(userIndexKey) ?? [];
+  
+  const storage = getShortLinkStorage();
+  const links: ShortLink[] = [];
+  
+  for (const token of tokens) {
+    const data = await storage.read(token);
+    if (data?.[token]) {
+      links.push(data[token]);
+    }
+  }
+  
+  return links;
+}
+
+export async function incrementClickCount(token: string): Promise<void> {
+  const link = await getShortLink(token);
+  if (link) {
+    link.click_count += 1;
+    await updateShortLink(link);
+  }
+}
+
+export async function getShortLinksByFileId(fileId: string): Promise<ShortLink[]> {
+  const indexStorage = getShortLinkIndexStorage();
+  const fileIndexKey = `file:${fileId}`;
+  const tokens = await indexStorage.read(fileIndexKey) ?? [];
+  
+  const storage = getShortLinkStorage();
+  const links: ShortLink[] = [];
+  
+  for (const token of tokens) {
+    const data = await storage.read(token);
+    if (data?.[token]) {
+      links.push(data[token]);
+    }
+  }
+  
+  return links;
+}
+
+export async function addShortLinkToFileIndex(token: string, fileId: string): Promise<void> {
+  const indexStorage = getShortLinkIndexStorage();
+  const fileIndexKey = `file:${fileId}`;
+  const existing = await indexStorage.read(fileIndexKey) ?? [];
+  if (!existing.includes(token)) {
+    existing.push(token);
+    await indexStorage.write(fileIndexKey, existing);
   }
 }

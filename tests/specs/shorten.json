@@ -1,0 +1,18 @@
+[
+  {
+    "name": "/shortstats shows statistics for admins",
+    "steps": [
+      {
+        "send": { "text": "/shortstats" },
+        "expect": [
+          {
+            "method": "sendMessage",
+            "payload": {
+              "text": "Only admins can view short link statistics."
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
